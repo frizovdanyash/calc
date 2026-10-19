@@ -192,9 +192,9 @@ private fun EquationSolverPanel(palette: AppPalette, precision: Int) {
     var c by rememberSaveable { mutableStateOf("11") }
     val solutionResult = remember(mode, a, b, c, precision) {
         runCatching {
-            val first = a.toDoubleOrNull() ?: error("Введите коэффициент a")
-            val second = b.toDoubleOrNull() ?: error("Введите коэффициент b")
-            val third = c.toDoubleOrNull() ?: error("Введите коэффициент c")
+            val first = a.replace(',', '.').toDoubleOrNull() ?: error("Введите коэффициент a")
+            val second = b.replace(',', '.').toDoubleOrNull() ?: error("Введите коэффициент b")
+            val third = c.replace(',', '.').toDoubleOrNull() ?: error("Введите коэффициент c")
             if (mode == "linear") {
                 EquationSolver.solveLinear(first, second, third, precision)
             } else {

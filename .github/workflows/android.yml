@@ -38,7 +38,22 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run tests and build APK
-        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+        shell: bash
+        run: |
+          set +e
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug > gradle-build.log 2>&1
+          status=$?
+          cat gradle-build.log
+          if [ "$status" -ne 0 ]; then
+            echo "## Gradle failure details" >> "$GITHUB_STEP_SUMMARY"
+            tail -n 100 gradle-build.log >> "$GITHUB_STEP_SUMMARY"
+            while IFS= read -r line; do
+              case "$line" in
+                e:*|*FAILURE:*|*error:*|*"What went wrong:"*) echo "::error::$line" ;;
+              esac
+            done < gradle-build.log
+            exit "$status"
+          fi
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
