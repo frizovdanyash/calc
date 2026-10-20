@@ -3,7 +3,7 @@ package com.frizovdanya.vektor.ui
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Bundle
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +16,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -82,11 +84,11 @@ object HistoryStorage {
 }
 
 @Composable
-fun VektorApp() {
+fun CalculatorApp() {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("vektor", Context.MODE_PRIVATE) }
     var themeMode by remember { mutableStateOf(preferences.getString("theme", "system") ?: "system") }
-    var accentId by remember { mutableStateOf(preferences.getString("accent", "mint") ?: "mint") }
+    var accentId by remember { mutableStateOf(preferences.getString("accent", "system") ?: "system") }
     var degrees by remember { mutableStateOf(preferences.getBoolean("degrees", true)) }
     var precision by remember { mutableIntStateOf(preferences.getInt("precision", 8)) }
     var destination by rememberSaveable { mutableStateOf(AppDestination.Calculator) }
@@ -104,7 +106,12 @@ fun VektorApp() {
         else -> systemDark
     }
     val accent = AccentChoices.firstOrNull { it.id == accentId } ?: AccentChoices.first()
-    val palette = appPalette(dark, accent)
+    val dynamicScheme = if (accentId == "system" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        null
+    }
+    val palette = dynamicScheme?.let { appPalette(dark, it) } ?: appPalette(dark, accent)
 
     SideEffect {
         val window = (context as? Activity)?.window
@@ -199,7 +206,7 @@ fun VektorApp() {
         NavigationItem(AppDestination.Settings, "Настройки", Icons.Outlined.Tune)
     )
 
-    VektorTheme(palette) {
+    CalculatorTheme(palette) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = palette.background,

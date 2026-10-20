@@ -25,9 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -84,7 +82,7 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 17.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    CardHeading("Цвет акцента", "Пять спокойных оттенков для кнопок и деталей.", palette)
+                    CardHeading("Цвет акцента", "Цвет системы или один из пяти готовых оттенков.", palette)
                 }
                 Row(
                     modifier = Modifier
@@ -94,7 +92,7 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     AccentChoices.forEach { choice ->
-                        val color = if (palette.isDark) choice.dark else choice.light
+                        val color = if (choice.id == "system") palette.accent else if (palette.isDark) choice.dark else choice.light
                         Column(
                             modifier = Modifier
                                 .clickable { onAccentChange(choice.id) }
@@ -112,7 +110,7 @@ fun SettingsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (accentId == choice.id) {
-                                    Icon(Icons.Outlined.Check, contentDescription = "Выбранный цвет", tint = if (palette.isDark) Color(0xFF10221C) else Color.White)
+                                    Icon(Icons.Outlined.Check, contentDescription = "Выбранный цвет", tint = palette.onAccent)
                                 }
                             }
                             Text(choice.label, color = palette.muted, fontSize = 10.sp, fontWeight = FontWeight.Medium)
@@ -154,11 +152,11 @@ fun SettingsScreen(
                 modifier = Modifier.padding(19.dp),
                 verticalArrangement = Arrangement.spacedBy(9.dp)
             ) {
-                Text("VEKTOR  ·  1.0.0", color = Color(0xFF8CE6C6), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
-                Text("Математика — яснее.", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                Text("Создатель  @frizovdanya", color = Color(0xFFCBD9D2), fontSize = 13.sp)
-                Text("Лицензия MIT · Открытый исходный код", color = Color(0xFFCBD9D2), fontSize = 12.sp)
-                Text("Вычисления выполняются на устройстве.", color = Color(0xFF9FB5AA), fontSize = 11.sp)
+                Text("CALCULATOR  ·  1.1.0", color = palette.accent, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Text("Считай и понимай.", color = palette.text, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                Text("Создатель  @frizovdanya", color = palette.muted, style = MaterialTheme.typography.bodyMedium)
+                Text("Лицензия MIT · Открытый исходный код", color = palette.muted, style = MaterialTheme.typography.bodySmall)
+                Text("Вычисления выполняются на устройстве.", color = palette.muted, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

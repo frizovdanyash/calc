@@ -1,5 +1,6 @@
 package com.frizovdanya.vektor.ui
 
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -10,7 +11,9 @@ data class AccentChoice(
     val id: String,
     val label: String,
     val light: Color,
-    val dark: Color
+    val dark: Color,
+    val lightContainer: Color,
+    val darkContainer: Color
 )
 
 data class AppPalette(
@@ -22,78 +25,107 @@ data class AppPalette(
     val muted: Color,
     val accent: Color,
     val accentTint: Color,
+    val onAccent: Color,
     val outline: Color,
     val display: Color
 )
 
 val AccentChoices = listOf(
-    AccentChoice("mint", "Мята", Color(0xFF147C66), Color(0xFF6CE0BC)),
-    AccentChoice("blue", "Сапфир", Color(0xFF2863B7), Color(0xFF82B8FF)),
-    AccentChoice("violet", "Ирис", Color(0xFF7952B3), Color(0xFFC4A1FF)),
-    AccentChoice("amber", "Янтарь", Color(0xFFAC6500), Color(0xFFFFC46D)),
-    AccentChoice("rose", "Роза", Color(0xFFB34E67), Color(0xFFFF9FB3))
+    AccentChoice("system", "Система", Color(0xFF6750A4), Color(0xFFD0BCFF), Color(0xFFEADDFF), Color(0xFF4F378B)),
+    AccentChoice("mint", "Зелёный", Color(0xFF386A20), Color(0xFFA1D18C), Color(0xFFD4E8C5), Color(0xFF234D12)),
+    AccentChoice("blue", "Синий", Color(0xFF0061A4), Color(0xFF9ECAFF), Color(0xFFD1E4FF), Color(0xFF00497D)),
+    AccentChoice("violet", "Фиолетовый", Color(0xFF6750A4), Color(0xFFD0BCFF), Color(0xFFEADDFF), Color(0xFF4F378B)),
+    AccentChoice("amber", "Оранжевый", Color(0xFF8B5000), Color(0xFFFFB95C), Color(0xFFFFDCBE), Color(0xFF633F00)),
+    AccentChoice("rose", "Розовый", Color(0xFFA90057), Color(0xFFFFB0C8), Color(0xFFFFD9E2), Color(0xFF7D003D))
 )
 
 fun appPalette(isDark: Boolean, choice: AccentChoice): AppPalette {
-    val accent = if (isDark) choice.dark else choice.light
     return if (isDark) {
         AppPalette(
             isDark = true,
-            background = Color(0xFF101615),
-            surface = Color(0xFF19211F),
-            surfaceAlt = Color(0xFF222D29),
-            text = Color(0xFFEAF2EE),
-            muted = Color(0xFF9BAAA3),
-            accent = accent,
-            accentTint = choice.dark.copy(alpha = 0.16f),
-            outline = Color(0xFF34423C),
-            display = Color(0xFF1A3831)
+            background = Color(0xFF141218),
+            surface = Color(0xFF141218),
+            surfaceAlt = Color(0xFF2B2930),
+            text = Color(0xFFE6E1E9),
+            muted = Color(0xFFCAC4D0),
+            accent = choice.dark,
+            accentTint = choice.darkContainer,
+            onAccent = Color(0xFF1C1B1F),
+            outline = Color(0xFF938F99),
+            display = Color(0xFF29272F)
         )
     } else {
         AppPalette(
             isDark = false,
-            background = Color(0xFFF4F6F2),
-            surface = Color(0xFFFFFFFF),
-            surfaceAlt = Color(0xFFE9EEEA),
-            text = Color(0xFF18231F),
-            muted = Color(0xFF718078),
-            accent = accent,
-            accentTint = choice.light.copy(alpha = 0.11f),
-            outline = Color(0xFFDCE4DE),
-            display = Color(0xFF173C34)
+            background = Color(0xFFFAF8FF),
+            surface = Color(0xFFFAF8FF),
+            surfaceAlt = Color(0xFFF0EDF5),
+            text = Color(0xFF1C1B1F),
+            muted = Color(0xFF49454F),
+            accent = choice.light,
+            accentTint = choice.lightContainer,
+            onAccent = Color.White,
+            outline = Color(0xFF79747E),
+            display = Color(0xFFF0EDF5)
         )
     }
 }
 
+fun appPalette(isDark: Boolean, scheme: ColorScheme): AppPalette {
+    return AppPalette(
+        isDark = isDark,
+        background = scheme.background,
+        surface = scheme.surface,
+        surfaceAlt = scheme.surfaceVariant,
+        text = scheme.onSurface,
+        muted = scheme.onSurfaceVariant,
+        accent = scheme.primary,
+        accentTint = scheme.primaryContainer,
+        onAccent = scheme.onPrimary,
+        outline = scheme.outline,
+        display = scheme.surfaceVariant
+    )
+}
+
 @Composable
-fun VektorTheme(palette: AppPalette, content: @Composable () -> Unit) {
+fun CalculatorTheme(palette: AppPalette, content: @Composable () -> Unit) {
     val scheme = if (palette.isDark) {
         darkColorScheme(
             primary = palette.accent,
-            onPrimary = Color(0xFF10221C),
+            onPrimary = palette.onAccent,
+            primaryContainer = palette.accentTint,
+            onPrimaryContainer = palette.text,
             secondary = palette.accent,
-            onSecondary = Color(0xFF10221C),
+            onSecondary = palette.onAccent,
+            secondaryContainer = palette.accentTint,
+            onSecondaryContainer = palette.text,
             background = palette.background,
             onBackground = palette.text,
             surface = palette.surface,
             onSurface = palette.text,
             surfaceVariant = palette.surfaceAlt,
             onSurfaceVariant = palette.muted,
-            outline = palette.outline
+            outline = palette.outline,
+            outlineVariant = palette.surfaceAlt
         )
     } else {
         lightColorScheme(
             primary = palette.accent,
-            onPrimary = Color.White,
+            onPrimary = palette.onAccent,
+            primaryContainer = palette.accentTint,
+            onPrimaryContainer = palette.text,
             secondary = palette.accent,
-            onSecondary = Color.White,
+            onSecondary = palette.onAccent,
+            secondaryContainer = palette.accentTint,
+            onSecondaryContainer = palette.text,
             background = palette.background,
             onBackground = palette.text,
             surface = palette.surface,
             onSurface = palette.text,
             surfaceVariant = palette.surfaceAlt,
             onSurfaceVariant = palette.muted,
-            outline = palette.outline
+            outline = palette.outline,
+            outlineVariant = palette.surfaceAlt
         )
     }
     MaterialTheme(colorScheme = scheme, content = content)

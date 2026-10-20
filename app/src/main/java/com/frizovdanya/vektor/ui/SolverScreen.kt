@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,13 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,16 +35,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.frizovdanya.vektor.math.ColumnSolution
 import com.frizovdanya.vektor.math.ColumnSolver
+import com.frizovdanya.vektor.math.ElementaryEquationSolver
+import com.frizovdanya.vektor.math.ElementaryEquationSolution
 import com.frizovdanya.vektor.math.EquationSolution
 import com.frizovdanya.vektor.math.EquationSolver
 import com.frizovdanya.vektor.math.MathEngine
@@ -64,13 +62,13 @@ fun SolverScreen(palette: AppPalette, precision: Int) {
         verticalArrangement = Arrangement.spacedBy(17.dp)
     ) {
         ScreenHeader(
-            eyebrow = "ПОНЯТНЫЙ ПРОЦЕСС",
-            title = "Разбираем задачу",
-            subtitle = "Не только ответ — каждый шаг на виду.",
+            eyebrow = "ПОШАГОВОЕ РЕШЕНИЕ",
+            title = "Решаем вместе",
+            subtitle = "Примеры, простые уравнения и перевод величин.",
             palette = palette
         )
         OptionSelector(
-            options = listOf("column" to "Столбик", "equation" to "Уравнения", "convert" to "Конвертер"),
+            options = listOf("column" to "Примеры", "equation" to "Уравнение", "convert" to "Единицы"),
             selected = mode,
             onSelect = { mode = it },
             palette = palette
@@ -187,6 +185,184 @@ private fun ColumnSolverPanel(palette: AppPalette) {
 
 @Composable
 private fun EquationSolverPanel(palette: AppPalette, precision: Int) {
+    var level by rememberSaveable { mutableStateOf("primary") }
+    Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+        OptionSelector(
+            options = listOf("primary" to "Простые", "algebra" to "Алгебра"),
+            selected = level,
+            onSelect = { level = it },
+            palette = palette
+        )
+        if (level == "primary") {
+            ElementaryEquationPanel(palette, precision)
+        } else {
+            AdvancedEquationPanel(palette, precision)
+        }
+    }
+}
+
+@Composable
+private fun ElementaryEquationPanel(palette: AppPalette, precision: Int) {
+    var operation by rememberSaveable { mutableStateOf("+") }
+    var unknownFirst by rememberSaveable { mutableStateOf(true) }
+    var known by rememberSaveable { mutableStateOf("5") }
+    var target by rememberSaveable { mutableStateOf("12") }
+    val calculation = remember(operation, unknownFirst, known, target, precision) {
+        runCatching {
+            val knownValue = known.replace(',', '.').toDoubleOrNull() ?: error("Введи известное число.")
+            val targetValue = target.replace(',', '.').toDoubleOrNull() ?: error("Введи число после знака равенства.")
+            ElementaryEquationSolver.solve(operation.first(), unknownFirst, knownValue, targetValue, precision)
+        }
+    }
+    val solution = calculation.getOrNull()
+    val knownLabel = "Известное число"
+    val positionOptions = when (operation) {
+        "−", "÷" -> listOf("first" to "Клетка слева", "second" to "Клетка справа")
+        else -> listOf("first" to "Первое · □", "second" to "Второе · □")
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+        SurfaceCard(palette) {
+            Column(
+                modifier = Modifier.padding(17.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                CardHeading("Задание для начальной школы", "Найди число вместо пустой клетки □.", palette)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(
+                        "+" to "Сложение",
+                        "−" to "Вычитание",
+                        "×" to "Умножение",
+                        "÷" to "Деление"
+                    ).forEach { (symbol, label) ->
+                        OperationChip(
+                            symbol = symbol,
+                            label = label,
+                            selected = operation == symbol,
+                            onClick = {
+                                operation = symbol
+                                when (symbol) {
+                                    "+" -> {
+                                        known = "5"
+                                        target = "12"
+                                        unknownFirst = true
+                                    }
+                                    "−" -> {
+                                        known = "12"
+                                        target = "5"
+                                        unknownFirst = false
+                                    }
+                                    "×" -> {
+                                        known = "6"
+                                        target = "42"
+                                        unknownFirst = true
+                                    }
+                                    "÷" -> {
+                                        known = "12"
+                                        target = "3"
+                                        unknownFirst = false
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+                if (operation == "−" || operation == "÷") {
+                    OptionSelector(
+                        options = positionOptions,
+                        selected = if (unknownFirst) "first" else "second",
+                        onSelect = { unknownFirst = it == "first" },
+                        palette = palette
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    NumericField(
+                        value = known,
+                        onValueChange = { known = it },
+                        label = knownLabel,
+                        palette = palette,
+                        modifier = Modifier.weight(1f)
+                    )
+                    NumericField(
+                        value = target,
+                        onValueChange = { target = it },
+                        label = "Ответ",
+                        palette = palette,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = palette.surfaceAlt
+                ) {
+                    Text(
+                        solution?.equation ?: "□ ? ? = ?",
+                        modifier = Modifier.padding(vertical = 18.dp, horizontal = 12.dp),
+                        color = palette.text,
+                        style = MaterialTheme.typography.headlineSmall,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Text(
+                    "Подсказка: чтобы найти неизвестное число, часто помогает обратное действие.",
+                    color = palette.muted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+        if (solution != null) {
+            ElementaryEquationResult(solution, palette)
+        } else {
+            ErrorCard(calculation.exceptionOrNull()?.message ?: "Проверь введённые числа.", palette)
+        }
+    }
+}
+
+@Composable
+private fun OperationChip(
+    symbol: String,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text("$symbol  $label") },
+        shape = RoundedCornerShape(12.dp)
+    )
+}
+
+@Composable
+private fun ElementaryEquationResult(solution: ElementaryEquationSolution, palette: AppPalette) {
+    SurfaceCard(palette) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(13.dp)
+        ) {
+            CardHeading("Ответ", "Сначала обратное действие, затем проверка.", palette)
+            Text(
+                solution.answer,
+                color = palette.accent,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            androidx.compose.material3.HorizontalDivider(color = palette.outline.copy(alpha = 0.4f))
+            solution.steps.forEachIndexed { index, step ->
+                StepRow(index + 1, step, palette)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdvancedEquationPanel(palette: AppPalette, precision: Int) {
     var mode by rememberSaveable { mutableStateOf("linear") }
     var a by rememberSaveable { mutableStateOf("2") }
     var b by rememberSaveable { mutableStateOf("3") }
@@ -211,7 +387,7 @@ private fun EquationSolverPanel(palette: AppPalette, precision: Int) {
                 modifier = Modifier.padding(17.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                CardHeading("Выбери тип", "Коэффициенты можно менять — решение обновляется сразу.", palette)
+                CardHeading("Алгебра для старших классов", "Линейные и квадратные уравнения.", palette)
                 OptionSelector(
                     options = listOf("linear" to "Линейное", "quadratic" to "Квадратное"),
                     selected = mode,
@@ -312,7 +488,6 @@ private fun UnitConverterPanel(palette: AppPalette, precision: Int) {
                         CategoryChip(
                             category = item,
                             selected = index == categoryIndex,
-                            palette = palette,
                             onClick = {
                                 categoryIndex = index
                                 fromIndex = 0
@@ -370,16 +545,16 @@ private fun UnitConverterPanel(palette: AppPalette, precision: Int) {
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(9.dp)
             ) {
-                Text("ПОЛУЧАЕТСЯ", color = Color(0xFFB7CDC3), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+                Text("Получится", color = palette.muted, style = MaterialTheme.typography.labelMedium)
                 Text(
                     result?.let { MathEngine.format(it, precision) } ?: "—",
-                    color = Color(0xFF8CE6C6),
+                    color = palette.accent,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 34.sp,
+                    style = MaterialTheme.typography.headlineLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(to.name, color = Color(0xFFCBD9D2), fontSize = 13.sp)
+                Text(to.name, color = palette.muted, style = MaterialTheme.typography.bodyMedium)
             }
         }
         Text(
@@ -394,27 +569,14 @@ private fun UnitConverterPanel(palette: AppPalette, precision: Int) {
 private fun CategoryChip(
     category: UnitCategory,
     selected: Boolean,
-    palette: AppPalette,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .height(37.dp)
-            .clickable(onClick = onClick),
-        shape = CircleShape,
-        color = if (selected) palette.accent else palette.surfaceAlt,
-        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, palette.outline.copy(alpha = 0.65f))
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                category.name,
-                modifier = Modifier.padding(horizontal = 14.dp),
-                color = if (selected) Color.White else palette.text,
-                fontSize = 12.sp,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
-            )
-        }
-    }
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(category.name) },
+        shape = RoundedCornerShape(12.dp)
+    )
 }
 
 @Composable
@@ -432,8 +594,8 @@ private fun UnitPicker(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { expanded = true },
-            shape = RoundedCornerShape(17.dp),
-            color = palette.surfaceAlt.copy(alpha = 0.62f),
+            shape = RoundedCornerShape(12.dp),
+            color = palette.surface,
             border = androidx.compose.foundation.BorderStroke(1.dp, palette.outline)
         ) {
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -465,7 +627,7 @@ private fun UnitPicker(
 @Composable
 private fun StepRow(index: Int, text: String, palette: AppPalette) {
     Row(horizontalArrangement = Arrangement.spacedBy(11.dp), verticalAlignment = Alignment.Top) {
-        Surface(shape = CircleShape, color = palette.accentTint) {
+        Surface(shape = RoundedCornerShape(8.dp), color = palette.accentTint) {
             Text(
                 index.toString(),
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -484,7 +646,7 @@ private fun ErrorCard(message: String, palette: AppPalette) {
         Text(
             message,
             modifier = Modifier.padding(17.dp),
-            color = if (palette.isDark) Color(0xFFFFB5A9) else Color(0xFF9C443E),
+            color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyMedium
         )
     }

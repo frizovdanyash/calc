@@ -7,14 +7,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Calculate
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -35,13 +38,14 @@ fun SurfaceCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    Surface(
+    Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        color = palette.surface,
-        border = BorderStroke(1.dp, palette.outline.copy(alpha = if (palette.isDark) 0.55f else 0.72f)),
-        content = content
-    )
+        colors = CardDefaults.cardColors(containerColor = palette.surface),
+        border = BorderStroke(1.dp, palette.outline.copy(alpha = if (palette.isDark) 0.45f else 0.35f))
+    ) {
+        content()
+    }
 }
 
 @Composable
@@ -57,20 +61,20 @@ fun BrandHeader(
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .background(palette.display, RoundedCornerShape(15.dp)),
+                .background(palette.accentTint, RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("v.", color = Color(0xFF8CE6C6), fontWeight = FontWeight.Black, fontSize = 23.sp)
+            Icon(Icons.Outlined.Calculate, contentDescription = null, tint = palette.accent, modifier = Modifier.size(24.dp))
         }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Text(
-                "VEKTOR",
+                "CALCULATOR",
                 color = palette.text,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.8.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.2.sp,
                 fontSize = 16.sp
             )
-            Text("Считай. Понимай. Решай.", color = palette.muted, fontSize = 12.sp)
+            Text("Простые ответы — понятные шаги.", color = palette.muted, fontSize = 12.sp)
         }
         trailing?.invoke()
     }
@@ -85,17 +89,16 @@ fun ScreenHeader(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            eyebrow.uppercase(),
+            eyebrow,
             color = palette.accent,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.45.sp
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold
         )
         Text(
             title,
             color = palette.text,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.SemiBold
         )
         Text(subtitle, color = palette.muted, style = MaterialTheme.typography.bodyMedium)
     }
@@ -107,9 +110,8 @@ fun SectionLabel(text: String, palette: AppPalette, modifier: Modifier = Modifie
         text,
         modifier = modifier,
         color = palette.muted,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.05.sp
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold
     )
 }
 
@@ -124,7 +126,7 @@ fun OptionSelector(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(palette.surfaceAlt.copy(alpha = if (palette.isDark) 0.62f else 0.74f), RoundedCornerShape(19.dp))
+            .background(palette.surfaceAlt, RoundedCornerShape(16.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -135,15 +137,15 @@ fun OptionSelector(
                     .weight(1f)
                     .height(42.dp)
                     .clickable { onSelect(id) },
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedCornerShape(12.dp),
                 color = if (isSelected) palette.surface else Color.Transparent,
-                shadowElevation = if (isSelected) 1.dp else 0.dp
+                border = if (isSelected) BorderStroke(1.dp, palette.outline.copy(alpha = 0.25f)) else null
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         label,
-                        color = if (isSelected) palette.text else palette.muted,
-                        fontSize = 13.sp,
+                        color = if (isSelected) palette.accent else palette.muted,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -175,7 +177,7 @@ fun NumericField(
         modifier = modifier,
         label = { Text(label) },
         singleLine = true,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
             focusedBorderColor = palette.accent,
@@ -190,14 +192,14 @@ fun NumericField(
 fun SmallTag(text: String, palette: AppPalette, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
-        shape = CircleShape,
+        shape = RoundedCornerShape(8.dp),
         color = palette.accentTint
     ) {
         Text(
             text,
             modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
             color = palette.accent,
-            fontSize = 11.sp,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold
         )
     }

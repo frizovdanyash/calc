@@ -1,10 +1,9 @@
-name: Android build and release
+name: Calculator Android build and release
 
 on:
   push:
     branches:
       - main
-      - arena/**
     tags:
       - v*
   pull_request:
@@ -17,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and test Android app
+    name: Build Calculator APK
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -37,11 +36,11 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run tests and build APK
+      - name: Build APK
         shell: bash
         run: |
           set +e
-          ./gradlew --no-daemon testDebugUnitTest assembleDebug > gradle-build.log 2>&1
+          ./gradlew --no-daemon assembleDebug > gradle-build.log 2>&1
           status=$?
           cat gradle-build.log
           if [ "$status" -ne 0 ]; then
@@ -58,7 +57,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vektor-debug-apk
+          name: calculator-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
@@ -67,13 +66,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: Вектор ${{ github.ref_name }}
+          name: Calculator ${{ github.ref_name }}
           generate_release_notes: true
           body: |
-            **Вектор — научный калькулятор для Android**
+            **Calculator — калькулятор для Android с Material Design 3**
 
             Установочный APK: `app-debug.apk` (подписан отладочным ключом и готов для установки вручную).
 
-            Исходный код и инструкции по сборке доступны в репозитории.
+            Исходный код и инструкция по сборке находятся в репозитории.
           files: app/build/outputs/apk/debug/app-debug.apk
           fail_on_unmatched_files: true

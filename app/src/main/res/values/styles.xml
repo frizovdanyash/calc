@@ -1,11 +1,11 @@
 <resources>
-    <style name="Theme.Vektor" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.Calculator" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#148C73</item>
+        <item name="android:colorAccent">#6750A4</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F4F6F2</item>
-        <item name="android:navigationBarColor">#F4F6F2</item>
+        <item name="android:statusBarColor">#FAF8FF</item>
+        <item name="android:navigationBarColor">#FAF8FF</item>
         <item name="android:windowLightNavigationBar">true</item>
-        <item name="android:windowBackground">#F4F6F2</item>
+        <item name="android:windowBackground">#FAF8FF</item>
     </style>
 </resources>
